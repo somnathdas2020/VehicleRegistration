@@ -1,0 +1,43 @@
+﻿@using VehicleRegistration.Models
+@using VehicleRegistration.Utility
+@model VehicleRegistrationList
+
+@{
+    ViewBag.Title = "VehicleRegistrationDetail";
+}
+
+<div class="col-lg-12" style="margin: 30px 0px;">
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Customer Name</th>
+                <th scope="col">Vehicle</th>
+                <th scope="col">Registration Amount</th>
+                <th scope="col">Due Amount</th>
+                <th scope="col">Year</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (VehicleRegistrationViewModel _model in Model._RegistrationList)
+            {
+            <tr>
+                <th scope="row">@(_model.CustomerName)</th>
+                <td>@(_model.VehicleName)</td>
+                <td>$@(_model.RegistrationAmount)</td>
+                <td>$@(_model.DueAmount)</td>
+                <td>@(_model.RegistrationYear)</td>
+                @if (_model.AllAmountPaid)
+                {
+                    <td><input type="button" class="btn btn-primary" disabled value="Pay" /></td>
+                }
+                else
+                {
+                    <td><a class="btn btn-primary" href="/payment/@(GlobalUtility.EnryptString(_model.VehicleRegistrationID.ToString())) " />Pay</td>
+                }
+
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>

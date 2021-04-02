@@ -1,0 +1,127 @@
+﻿@using VehicleRegistration.Models
+@using VehicleRegistration.Utility
+@model VehicleRegistrationViewModel
+
+@{
+    ViewBag.Title = "PaymentDetail";
+}
+
+    <div class="col-lg-12 padding-0 margine-top-bottom-30">
+        <div class="col-lg-12 padding-0 padding-bottom-15">
+            <div class="col-lg-3">
+                Customer Name
+            </div>
+            <div class="col-lg-9">
+                @Model.CustomerName
+            </div>
+        </div>
+        <div class="col-lg-12 padding-0 padding-bottom-15">
+            <div class="col-lg-3">
+                Payment Due
+            </div>
+            <div class="col-lg-9">
+                $@Model.DueAmount
+            </div>
+        </div>
+
+        @if (!Model.AllAmountPaid)
+        {
+            using (Ajax.BeginForm(null, null, new AjaxOptions { Url = Url.Action("PayRegistrationamount", "Home", new { regid = GlobalUtility.EnryptString(Model.VehicleRegistrationID.ToString()) }), HttpMethod = "POST", LoadingElementId = "progress", OnBegin = "return onSubmit()", OnSuccess = "OnSuccess", OnFailure = "OnFailure" }, new { @class = "form -horizontal", role = "form" }))
+            {
+                <div class="col-lg-12 padding-0 padding-bottom-15">
+                    <div class="col-lg-3">
+                        Enter Amount to pay
+                    </div>
+
+                    <div class="col-lg-9">
+                        $<input type="text" value="@(Model.DueAmount)" data-dfamt="@(Model.DueAmount)" id="payamount" name="payamount"
+                                ondrop="return false;" onpaste="return false;" required onkeypress="return IsNumeric(event);" />
+                    </div>
+
+                </div>
+
+                <div class="col-lg-12 padding-bottom-15">
+                    <div class="col-lg-12">
+                        <input type="submit" class="btn btn-primary col-lg-offset-3" id="btnpayment" value="Pay" />
+                    </div>
+                    <div class="col-lg-12 padding-0 ">
+                        <span>
+                            <img id="progress" style="display:none;" src="~/images/gif-processing.png" alt="Updating.." />
+                        </span>
+                    </div>
+                    <div id="paymentstatus" class="col-lg-12 padding-0">
+
+                    </div>
+                </div>
+
+            }
+        }
+        else
+        {
+
+            <div class="col-lg-12">
+                <span>$0 All payment is done.</span>
+            </div>
+        }
+    </div>
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+<script type="text/javascript">
+
+    var specialKeys = new Array();
+    specialKeys.push(8); //Backspace
+
+    function IsNumeric(e) {
+        var keyCode = e.which ? e.which : e.keyCode
+        var ret = ((keyCode >= 48 && keyCode <= 57) || specialKeys.indexOf(keyCode) != -1);
+        return ret;
+    }
+    function onSubmit() {
+        let payamount = $('#payamount');
+        let defaultPayAmount = payamount.attr('data-dfamt');
+        if (payamount.val().trim() == '') {
+            alert('Payment amount cannot be blank.');
+            payamount.css("border-color", "red");
+            setTimeout(function () {
+                payamount.removeAttr('style');
+            }, 8000);
+            return false;
+        }
+        else if (parseFloat(payamount.val().trim()) < 0.01) {
+            alert('Payment amount cannot be less then $0.01.');
+            payamount.css("border-color", "red");
+            setTimeout(function () {
+                payamount.removeAttr('style');
+            }, 8000);
+            return false;
+        } else if (parseInt(payamount.val().trim()) > parseInt(defaultPayAmount)) {
+            alert('You cannot pay more that payment amount.');
+            payamount.css("border-color", "red");
+            setTimeout(function () {
+                payamount.removeAttr('style');
+            }, 8000);
+            payamount.val(defaultPayAmount);
+            return false;
+        }
+        return true;
+    }
+    function OnSuccess(res) {
+        if (res) {
+            $('#paymentstatus').html('<div class="alert alert-success">Payment successfull</div>');
+            $('#btnpayment').remove();
+            $('#payamount').attr('disabled', 'disabled');
+        } else {
+            $('#paymentstatus').html('<div class="alert alert-danger">Payment not successfull. Internal error, Please try after sometime.</div>');
+        }
+        setTimeout(function () {
+            $('#paymentstatus').html('');
+            window.location.href = "/all-vehicle-registrations";
+        }, 10000);
+    }
+
+    function OnFailure() {
+        $('#paymentstatus').html('<div class="alert alert-danger">Internal server error, Please try after sometime.</div>');
+        setTimeout($('#paymentstatus').html(''), 10000);
+    }
+</script>
